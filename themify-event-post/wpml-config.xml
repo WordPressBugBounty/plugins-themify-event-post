@@ -1,0 +1,32 @@
+<wpml-config>
+	<custom-fields>
+		<custom-field action="copy">start_date</custom-field>
+		<custom-field action="copy">to_be_announced</custom-field>
+		<custom-field action="copy">end_date</custom-field>
+		<custom-field action="copy">repeat</custom-field>
+		<custom-field action="copy">repeat_x</custom-field>
+		<custom-field action="copy">event_status</custom-field>
+		<custom-field action="copy">ticket_purchase_start_date</custom-field>
+		<custom-field action="copy">ticket_purchase_end_date</custom-field>
+		<custom-field action="translate">location</custom-field>
+		<custom-field action="translate">map_address</custom-field>
+		<custom-field action="translate">organizer</custom-field>
+		<custom-field action="translate">organizer_name</custom-field>
+		<custom-field action="translate">organizer_url</custom-field>
+		<custom-field action="translate">event_performer</custom-field>
+		<custom-field action="translate">performer_name</custom-field>
+		<custom-field action="translate">event_attendance</custom-field>
+		<custom-field action="translate">buy_tickets_label</custom-field>
+		<custom-field action="translate">buy_tickets</custom-field>
+		<custom-field action="translate">buy_tickets_price</custom-field>
+		<custom-field action="translate">buy_tickets_currency</custom-field>
+		<custom-field action="translate">ticket_availability</custom-field>
+	</custom-fields>
+	<custom-types>
+		<custom-type translate="1">event</custom-type>
+	</custom-types>    
+	<taxonomies>
+		<taxonomy translate="1">event-category</taxonomy>
+		<taxonomy translate="1">event-tag</taxonomy>
+	</taxonomies>
+</wpml-config>
