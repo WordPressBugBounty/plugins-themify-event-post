@@ -51,6 +51,7 @@ class Themify_Event_Post {
 		add_filter( 'themify_metabox/fields/themify-meta-boxes', array( $this, 'themify_do_metaboxes' ), 10, 2 );
 		add_action( 'wp_enqueue_scripts', array( $this, 'wp_enqueue_scripts' ) );
 		add_filter( 'template_include', array( $this, 'template_include' ) );
+		add_filter( 'post_class', array( $this, 'post_class' ) );
 
 		if ( current_user_can( 'publish_posts' ) && get_user_option( 'rich_editing' ) === 'true' ) {
 			include( $this->dir . 'includes/tinymce.php' );
@@ -266,7 +267,9 @@ class Themify_Event_Post {
 	}
 
 	public function locate_template( $name ) {
-		if( is_child_theme() && is_file( trailingslashit( get_stylesheet_directory() ) . trailingslashit( $this->pid ) . "{$name}.php" ) ) {
+		if ( str_contains( $name, '../' ) ) {
+            return false;
+        } else if ( is_child_theme() && is_file( trailingslashit( get_stylesheet_directory() ) . trailingslashit( $this->pid ) . "{$name}.php" ) ) {
 			return trailingslashit( get_stylesheet_directory() ) . trailingslashit( $this->pid ) . "{$name}.php";
 		} else if( is_file( trailingslashit( get_template_directory() ) . trailingslashit( $this->pid ) . "{$name}.php" ) ) {
 			return trailingslashit( get_template_directory() ) . trailingslashit( $this->pid ) . "{$name}.php";
@@ -351,4 +354,12 @@ class Themify_Event_Post {
 			}
 		}
 	}
+
+    function post_class( $classes ) {
+        if ( get_post_type() === 'event' ) {
+            $classes[] = themify_event_is_visible() ? 'tep_upcoming_event' : 'tep_past_event';
+        }
+
+        return $classes;
+    }
 }

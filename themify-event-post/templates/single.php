@@ -8,7 +8,7 @@
  */
 $post_id = get_the_id();
 ?>
-<div class="themify_event_post">
+<div <?php post_class( 'themify_event_post' ); ?>>
 
 	<?php
 	echo themify_event_post_get_image();

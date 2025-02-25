@@ -1020,17 +1020,13 @@ endif;
 function themify_event_is_visible( $post = null ) : bool {
     $post = get_post( $post );
 
-    $start_date = get_post_meta( $post->ID, 'start_date', true );
 	$end_date = get_post_meta( $post->ID, 'end_date', true );
     $time = time();
-    if (
-        ( ! $start_date || $time > strtotime( $start_date ) )
-        && ( ! $end_date || $time < strtotime( $end_date ) )
-    ) {
-        return true;
+    if ( $end_date && $time > strtotime( $end_date ) ) {
+        return false;
     }
 
-    return false;
+    return true;
 }
 
 function themify_event_build_atts( $atts = array() ) : string {

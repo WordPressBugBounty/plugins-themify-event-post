@@ -3,8 +3,10 @@ Contributors: themifyme
 Plugin Name: Themify Event Post
 Tags: event, post, date, post-type
 Requires at least: 5.2
-Tested up to: 6.5.3
-Stable tag: 1.3.2
+Tested up to: 6.7.2
+Stable tag: 1.3.3
+License: GPL v2
+License URI: https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 
 This plugin will add Event post type.
 
