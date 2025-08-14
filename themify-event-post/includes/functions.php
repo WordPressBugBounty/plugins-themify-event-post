@@ -122,27 +122,33 @@ function themify_event_post_date( $date_format = null, $time_format = null ) {
 		echo '<time class="tep_date">';
 
 		if( $start_date ) {
-			$stamp = date_create( $start_date, new DateTimeZone( 'UTC' ) )->format( 'U' );
-			echo '<span class="event-start-date">';
-			$start_date_parts = explode( ' ', $start_date );
-			if( $repeat ) {
-				echo themify_event_post_get_repeat_date( $repeat, intval( get_post_meta( get_the_id(), 'repeat_x', true ) ), $start_date_parts[0], $start_date_parts[1] );
-			} else {
-				echo '<span class="event-day"> '.date_i18n( $date_format, $stamp ) .'</span> <span class="event-time-at">'. _x( ' @ ', 'Connector between date and time (with spaces around itself) in event date and time.', 'themify-event-post' ) .'</span> <span class="event-time">' . date_i18n( $time_format, $stamp ) .'</span>';
-			}
-			echo '</span>';
+			$stamp = date_create( $start_date, new DateTimeZone( 'UTC' ) );
+            if ( $stamp ) {
+                $stamp = $stamp->format( 'U' );
+                echo '<span class="event-start-date">';
+                $start_date_parts = explode( ' ', $start_date );
+                if( $repeat ) {
+                    echo themify_event_post_get_repeat_date( $repeat, intval( get_post_meta( get_the_id(), 'repeat_x', true ) ), $start_date_parts[0], $start_date_parts[1] );
+                } else {
+                    echo '<span class="event-day"> '.date_i18n( $date_format, $stamp ) .'</span> <span class="event-time-at">'. _x( ' @ ', 'Connector between date and time (with spaces around itself) in event date and time.', 'themify-event-post' ) .'</span> <span class="event-time">' . date_i18n( $time_format, $stamp ) .'</span>';
+                }
+                echo '</span>';
+            }
 		}
 		if( !$hide_event_end && ! $repeat && $end_date ) {
-			$stamp = date_create( $end_date, new DateTimeZone( 'UTC' ) )->format( 'U' );
-			echo '<span class="event-end-date">';
-			$end_date_parts = explode( ' ', $end_date );
-			echo ! isset( $start_date_parts ) || $start_date_parts[0] != $end_date_parts[0] ?'<span class="event-date-separator">'. _x( ' - ', 'Character to provide a hint that this is the event end date and time.', 'themify-event-post' ) .'</span>
- 					<span class="event-day">' . date_i18n( $date_format, $stamp ) .'</span>' :' <span class="event-date-separator"> - </span>';
-			if ( isset( $start_date_parts[0] ) && $start_date_parts[0] != $end_date_parts[0] ) {
-				echo '<span class="event-time-at">'. _x( ' @ ', 'Connector between date and time (with spaces around itself) in event date and time.', 'themify-event-post' ).'</span>';
-			}
-			echo '<span class="event-time">' . date_i18n( $time_format, $stamp ) . '</span>';
-			echo '</span>';
+			$stamp = date_create( $end_date, new DateTimeZone( 'UTC' ) );
+            if ( $stamp ) {
+                $stamp = $stamp->format( 'U' );
+                echo '<span class="event-end-date">';
+                $end_date_parts = explode( ' ', $end_date );
+                echo ! isset( $start_date_parts ) || $start_date_parts[0] != $end_date_parts[0] ?'<span class="event-date-separator">'. _x( ' - ', 'Character to provide a hint that this is the event end date and time.', 'themify-event-post' ) .'</span>
+                        <span class="event-day">' . date_i18n( $date_format, $stamp ) .'</span>' :' <span class="event-date-separator"> - </span>';
+                if ( isset( $start_date_parts[0] ) && $start_date_parts[0] != $end_date_parts[0] ) {
+                    echo '<span class="event-time-at">'. _x( ' @ ', 'Connector between date and time (with spaces around itself) in event date and time.', 'themify-event-post' ).'</span>';
+                }
+                echo '<span class="event-time">' . date_i18n( $time_format, $stamp ) . '</span>';
+                echo '</span>';
+            }
 		}
 
 		echo '</time>';
