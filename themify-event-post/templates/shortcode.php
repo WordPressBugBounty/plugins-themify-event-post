@@ -48,6 +48,10 @@ if ( empty( $args['template_before'] ) )
 if ( empty( $args['template_after'] ) )
 	$args['template_after'] = '</div>';
 
+// Prevent XSS via user-supplied wrapper templates.
+$args['template_before'] = themify_event_post_sanitize_template_wrapper( $args['template_before'] );
+$args['template_after']  = themify_event_post_sanitize_template_wrapper( $args['template_after'] );
+
 // Event Query Setup
 $events = array();
 

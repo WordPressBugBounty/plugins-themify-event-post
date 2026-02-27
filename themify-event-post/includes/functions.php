@@ -1045,3 +1045,46 @@ function themify_event_build_atts( $atts = array() ) : string {
     }
     return $attribute_string;
 }
+
+/**
+ * Sanitize user-provided shortcode wrapper templates.
+ *
+ * WordPress core unescapes shortcode attributes (e.g. "\\x3c" -> "<").
+ * Without sanitization, template_before/template_after can be used for XSS.
+ *
+ * @param string $html Wrapper HTML.
+ * @return string Sanitized HTML.
+ */
+function themify_event_post_sanitize_template_wrapper( $html ) : string {
+	if ( $html === '' || ! is_string( $html ) ) {
+		return '';
+	}
+
+	$allowed = array(
+		'div'     => array( 'class' => true, 'id' => true, 'role' => true, 'aria-label' => true, 'aria-hidden' => true ),
+		'span'    => array( 'class' => true, 'id' => true, 'role' => true, 'aria-label' => true, 'aria-hidden' => true ),
+		'p'       => array( 'class' => true, 'id' => true ),
+		'br'      => array(),
+		'ul'      => array( 'class' => true, 'id' => true ),
+		'ol'      => array( 'class' => true, 'id' => true ),
+		'li'      => array( 'class' => true, 'id' => true ),
+		'a'       => array( 'href' => true, 'class' => true, 'id' => true, 'rel' => true, 'target' => true, 'title' => true, 'aria-label' => true ),
+		'strong'  => array(),
+		'em'      => array(),
+		'b'       => array(),
+		'i'       => array(),
+		'h1'      => array( 'class' => true, 'id' => true ),
+		'h2'      => array( 'class' => true, 'id' => true ),
+		'h3'      => array( 'class' => true, 'id' => true ),
+		'h4'      => array( 'class' => true, 'id' => true ),
+		'h5'      => array( 'class' => true, 'id' => true ),
+		'h6'      => array( 'class' => true, 'id' => true ),
+		'section' => array( 'class' => true, 'id' => true, 'role' => true, 'aria-label' => true ),
+		'article' => array( 'class' => true, 'id' => true, 'role' => true, 'aria-label' => true ),
+		'header'  => array( 'class' => true, 'id' => true ),
+		'footer'  => array( 'class' => true, 'id' => true ),
+		'nav'     => array( 'class' => true, 'id' => true, 'role' => true, 'aria-label' => true ),
+	);
+
+	return wp_kses( $html, $allowed );
+}
