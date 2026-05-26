@@ -2,7 +2,7 @@
 /*
 Plugin Name:  Themify Event Post
 Plugin URI:   https://themify.me/event-post
-Version:      1.3.5
+Version:      1.3.6
 Author:       Themify
 Author URI:   https://themify.me
 Description:  This plugin will add an Event post type. A simple way to display events on your site.
@@ -44,7 +44,7 @@ function themify_event_post_setup() {
 	Themify_Event_Post::get_instance( array(
 		'url' => trailingslashit( plugin_dir_url( __FILE__ ) ),
 		'dir' => trailingslashit( plugin_dir_path( __FILE__ ) ),
-		'version' => '1.3.5'
+		'version' => '1.3.6'
 	) );
 }
 add_action( 'after_setup_theme', 'themify_event_post_setup' );
