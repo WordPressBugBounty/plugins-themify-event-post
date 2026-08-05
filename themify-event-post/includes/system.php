@@ -43,6 +43,7 @@ class Themify_Event_Post {
 			new Themify_Event_Post_Admin();
 		} else {
 			add_action( 'pre_get_posts', [ $this, 'pre_get_posts' ] );
+		add_filter( 'posts_clauses', 'themify_event_post_past_posts_clauses', 10, 2 );
 		}
 
 		add_action( 'after_setup_theme', array( $this, 'load_themify_library' ), 15 );
@@ -311,46 +312,29 @@ class Themify_Event_Post {
 			$order = $this->get_option( 'order', 'desc' );
 			$orderby = $this->get_option( 'orderby', 'date' );
 			$show = $this->get_option( 'show', 'all' );
+			$now = current_time( 'Y-m-d H:i' );
+			$event_meta = themify_event_post_build_event_meta_query( $show, $orderby, $now );
 
-			$query->set( 'orderby', $orderby );
 			$query->set( 'order', $order );
-			if ( $orderby === 'event_date' ) {
-				$query->set( 'orderby', 'meta_value' );
-				$query->set( 'meta_key', 'start_date' );
-			}
-			if ( $show === 'upcoming' ) {
-				$query->set( 'meta_query', array(
-					'relation' => 'OR',
-					array(
-						'key' => 'end_date',
-						'value' => date_i18n( 'Y-m-d H:i' ),
-						'compare' => '>='
-					),
-					array(
-						'key' => 'start_date',
-						'value' => date_i18n( 'Y-m-d H:i' ),
-						'compare' => '>='
-					),
-					array(
-						'key' => 'repeat',
-						'value' => 'none',
-						'compare' => '!='
-					)
-				) );
-			} elseif ( $show === 'past' ) {
-				$query->set( 'meta_query', array(
-					'relation' => 'AND',
-					array(
-						'key' => 'end_date',
-						'value' => date_i18n( 'Y-m-d H:i' ),
-						'compare' => '<'
-					),
-					array(
-						'key' => 'end_date',
-						'value' => '',
-						'compare' => '!='
-					),
-				) );
+
+			if ( ! empty( $event_meta['past_filter'] ) ) {
+				$query->set( 'tep_past_filter', true );
+				if ( ! empty( $event_meta['event_date_order'] ) ) {
+					$query->set( 'tep_event_date_order', true );
+					$query->set( 'orderby', 'none' );
+				}
+			} else {
+				if ( null !== $event_meta['meta_query'] ) {
+					$query->set( 'meta_query', $event_meta['meta_query'] );
+				}
+				if ( null !== $event_meta['orderby'] ) {
+					$query->set( 'orderby', $event_meta['orderby'] );
+				} elseif ( $orderby !== 'event_date' ) {
+					$query->set( 'orderby', $orderby );
+				}
+				if ( null !== $event_meta['meta_key'] ) {
+					$query->set( 'meta_key', $event_meta['meta_key'] );
+				}
 			}
 		}
 	}

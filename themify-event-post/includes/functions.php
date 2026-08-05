@@ -191,7 +191,7 @@ if ( ! function_exists( 'themify_event_organizer' ) ) :
             <?php if(!empty($url)): ?>
             <a href="<?php echo $url ?>" target="_blank">
             <?php endif; ?>
-            <?php echo $name ?>
+            <?php echo esc_html( $name ); ?>
             <?php if(!empty($url)): ?>
             </a>
             <?php endif; ?>
@@ -216,7 +216,7 @@ if ( ! function_exists( 'themify_event_performer' ) ) :
         ob_start();
         ?>
         <div class="tep_performer">
-            <?php echo $name ?>
+            <?php echo esc_html( $name ); ?>
         </div>
         <?php
         ob_end_flush();
@@ -509,6 +509,117 @@ function themify_event_post_parse_shortcode_ids( $category ) {
  * @return array
  * @since 1.0.2
  */
+function themify_event_post_past_posts_clauses( $clauses, $query ) {
+	if ( empty( $query->query_vars['tep_past_filter'] ) ) {
+		return $clauses;
+	}
+
+	global $wpdb;
+	$now = current_time( 'Y-m-d H:i' );
+
+	$clauses['join'] .= $wpdb->prepare(
+		" INNER JOIN {$wpdb->postmeta} AS tep_ed ON ({$wpdb->posts}.ID = tep_ed.post_id AND tep_ed.meta_key = 'end_date' AND tep_ed.meta_value != '' AND tep_ed.meta_value < %s) ",
+		$now
+	);
+
+	if ( ! empty( $query->query_vars['tep_event_date_order'] ) ) {
+		$clauses['join'] .= " INNER JOIN {$wpdb->postmeta} AS tep_sd ON ({$wpdb->posts}.ID = tep_sd.post_id AND tep_sd.meta_key = 'start_date') ";
+		$order = ( isset( $query->query_vars['order'] ) && 'asc' === strtolower( $query->query_vars['order'] ) ) ? 'ASC' : 'DESC';
+		$clauses['orderby'] = "tep_sd.meta_value {$order}";
+	}
+
+	return $clauses;
+}
+
+function themify_event_post_apply_event_meta_query( $query_args, $event_meta ) {
+	if ( ! empty( $event_meta['past_filter'] ) ) {
+		$query_args['tep_past_filter'] = true;
+		if ( ! empty( $event_meta['event_date_order'] ) ) {
+			$query_args['tep_event_date_order'] = true;
+		}
+		if ( null !== $event_meta['orderby'] ) {
+			$query_args['orderby'] = $event_meta['orderby'];
+		}
+		return $query_args;
+	}
+
+	if ( null !== $event_meta['meta_query'] ) {
+		$query_args['meta_query'] = $event_meta['meta_query'];
+	}
+	if ( null !== $event_meta['orderby'] ) {
+		$query_args['orderby'] = $event_meta['orderby'];
+	}
+	if ( null !== $event_meta['meta_key'] ) {
+		$query_args['meta_key'] = $event_meta['meta_key'];
+	}
+
+	return $query_args;
+}
+
+function themify_event_post_build_event_meta_query( $show, $orderby, $now ) {
+	$meta = array(
+		'meta_query' => null,
+		'orderby' => null,
+		'meta_key' => null,
+		'past_filter' => false,
+		'event_date_order' => false,
+	);
+
+	if ( $show === 'upcoming' && $orderby === 'event_date' ) {
+		$meta['meta_query'] = array(
+			'relation' => 'OR',
+			'start_date_clause' => array(
+				'key' => 'start_date',
+				'value' => $now,
+				'compare' => '>=',
+			),
+			array(
+				'key' => 'end_date',
+				'value' => $now,
+				'compare' => '>=',
+			),
+			array(
+				'key' => 'repeat',
+				'value' => 'none',
+				'compare' => '!=',
+			),
+		);
+		$meta['orderby'] = 'start_date_clause';
+	} elseif ( $show === 'past' ) {
+		$meta['past_filter'] = true;
+		if ( $orderby === 'event_date' ) {
+			$meta['event_date_order'] = true;
+			$meta['orderby'] = 'none';
+		}
+	} elseif ( $show === 'upcoming' ) {
+		$meta['meta_query'] = array(
+			'relation' => 'OR',
+			array(
+				'key' => 'end_date',
+				'value' => $now,
+				'compare' => '>=',
+			),
+			array(
+				'key' => 'start_date',
+				'value' => $now,
+				'compare' => '>=',
+			),
+			array(
+				'key' => 'repeat',
+				'value' => 'none',
+				'compare' => '!=',
+			),
+		);
+	}
+
+	if ( $orderby === 'event_date' && null === $meta['orderby'] && empty( $meta['past_filter'] ) ) {
+		$meta['orderby'] = 'meta_value';
+		$meta['meta_key'] = 'start_date';
+	}
+
+	return $meta;
+}
+
 function themify_event_post_parse_query( $args = array() ) {
 	$defaults = array(
 		'post_type' => 'event',
@@ -582,43 +693,11 @@ function themify_event_post_parse_query( $args = array() ) {
 		}
 	}
 
-	if ( $orderby == 'event_date' ) {
-		$query_args['orderby'] = 'meta_value';
-		$query_args['meta_key'] = 'start_date';
-	}
+	$now = current_time( 'Y-m-d H:i' );
+	$event_meta = themify_event_post_build_event_meta_query( $show, $orderby, $now );
+	$query_args = themify_event_post_apply_event_meta_query( $query_args, $event_meta );
 
-	if ( $show === 'upcoming' ) {
-		$query_args['meta_query'] = array(
-			'relation' => 'OR',
-			array(
-				'key' => 'end_date',
-				'value' => date_i18n( 'Y-m-d H:i' ),
-				'compare' => '>='
-			),
-			array(
-				'key' => 'start_date',
-				'value' => date_i18n( 'Y-m-d H:i' ),
-				'compare' => '>='
-			),
-			array(
-				'key' => 'repeat',
-				'value' => 'none',
-				'compare' => '!=')
-		);
-	} elseif ( $show === 'past' ) {
-		$query_args['meta_query'] = array(
-			'relation' => 'AND',
-			array(
-				'key' => 'end_date',
-				'value' => date_i18n( 'Y-m-d H:i' ),
-				'compare' => '<'
-			),
-			array(
-				'key' => 'end_date',
-				'value' => '',
-				'compare' => '!='
-			),
-		); 
+	if ( $show === 'past' ) {
 		$query_args['order'] = $order;
 	}
 
@@ -1007,7 +1086,7 @@ function themify_event_get_buy_ticket( $post = null ) : string {
         }
 
         $buy_tickets_label .= themify_event_post_get_price( null, ' - ' );
-        $output = sprintf( '<a %s>%s</a>', themify_event_build_atts( $attr ), esc_html( $buy_tickets_label ) );
+        $output = sprintf( '<a %s>%s</a>', themify_event_build_atts( $attr ), wp_kses_post( $buy_tickets_label ) );
     }
 
     return $output;

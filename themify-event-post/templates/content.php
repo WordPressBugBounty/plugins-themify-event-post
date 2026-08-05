@@ -74,11 +74,11 @@ $map_address = '';
 			<?php if ( ( $location = get_post_meta( $post_id, 'location', true ) ) && $hide_event_location === 'no' ) : ?>
 					<div>
 						<span class="tep_location">
-							<?php echo $location; ?>
+							<?php echo esc_html( $location ); ?>
 						</span>
 						<?php if ( $map_address = get_post_meta( $post_id, 'map_address', true ) ) : ?>
 							<span class="tep_address">
-								<?php echo $map_address; ?>
+								<?php echo wp_kses_post( $map_address ); ?>
 							</span>
 						<?php endif; ?>
 					</div>
@@ -95,7 +95,7 @@ $map_address = '';
 
 				<?php if ( $more_link ) : ?>
 					<p>
-						<a href="<?php the_permalink(); ?>" class="more-link"><?php echo $more_text; ?></a>
+						<a href="<?php the_permalink(); ?>" class="more-link"><?php echo wp_kses_post( $more_text ); ?></a>
 					</p>
 				<?php endif; ?>
 

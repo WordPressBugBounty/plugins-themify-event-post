@@ -39,19 +39,7 @@ if ( $instance['show'] === 'upcoming' ) {
 		)
 	);
 } else if ( $instance['show'] === 'past' ) {
-	$query_args['meta_query'] = array(
-		'relation' => 'AND',
-		array(
-			'key' => 'end_date',
-			'value' => date_i18n( 'Y-m-d H:i' ),
-			'compare' => '<'
-		),
-		array(
-			'key' => 'end_date',
-			'value' => '',
-			'compare' => '!='
-		),
-	);
+	$query_args['tep_past_filter'] = true;
 }
 
 $posts = get_posts( apply_filters( 'themify_event_post_widget_query_args', $query_args, $instance ) );
