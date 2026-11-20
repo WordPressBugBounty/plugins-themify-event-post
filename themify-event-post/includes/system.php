@@ -76,6 +76,14 @@ class Themify_Event_Post {
 			( is_singular( 'event' ) || is_tax( [ 'event-category', 'event-tag' ] ) )
 		) {
 
+			if ( is_singular( 'event' ) ) {
+				add_filter( 'comments_open', array( $this, 'close_protected_event_comments' ), 99, 2 );
+				add_filter( 'pings_open', array( $this, 'close_protected_event_comments' ), 99, 2 );
+				add_filter( 'comments_array', array( $this, 'hide_protected_event_comments' ), 99, 2 );
+				add_filter( 'get_comments_number', array( $this, 'hide_protected_event_comment_count' ), 99, 2 );
+				add_filter( 'comments_template', array( $this, 'protected_event_comments_template' ), 999 );
+			}
+
 			if ( class_exists( 'Tbp_Public' ,false) ) {
 				$location = is_singular( 'event' ) ? 'single' : 'archive';
 				/* a Builder Pro template is active, don't change the template */
@@ -128,6 +136,61 @@ class Themify_Event_Post {
 		}
 
 		return $content;
+	}
+
+	/**
+	 * Keep the comment form closed until a password-protected event is unlocked.
+	 *
+	 * @param bool $open
+	 * @param int  $post_id
+	 * @return bool
+	 */
+	function close_protected_event_comments( $open, $post_id ) {
+		if ( themify_event_post_hide_protected_meta( $post_id ) ) {
+			return false;
+		}
+
+		return $open;
+	}
+
+	/**
+	 * @param array $comments
+	 * @param int   $post_id
+	 * @return array
+	 */
+	function hide_protected_event_comments( $comments, $post_id ) {
+		if ( themify_event_post_hide_protected_meta( $post_id ) ) {
+			return array();
+		}
+
+		return $comments;
+	}
+
+	/**
+	 * @param int|string $count
+	 * @param int        $post_id
+	 * @return int|string
+	 */
+	function hide_protected_event_comment_count( $count, $post_id ) {
+		if ( themify_event_post_hide_protected_meta( $post_id ) ) {
+			return 0;
+		}
+
+		return $count;
+	}
+
+	/**
+	 * Replace the theme comments template so the form is not rendered.
+	 *
+	 * @param string $template
+	 * @return string
+	 */
+	function protected_event_comments_template( $template ) {
+		if ( themify_event_post_hide_protected_meta() ) {
+			return $this->get_template_dir() . '/comments-protected.php';
+		}
+
+		return $template;
 	}
 
 	function archive_template( $content ) {

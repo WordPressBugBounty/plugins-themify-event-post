@@ -7,15 +7,22 @@
  * @var $content
  */
 $post_id = get_the_id();
+$hide_protected_meta = themify_event_post_hide_protected_meta( $post_id );
+$map_address = '';
+$location = '';
 ?>
 <div <?php post_class( 'themify_event_post' ); ?>>
 
 	<?php
-	echo themify_event_post_get_image();
-	$image = get_the_post_thumbnail_url($post_id);
+	if ( ! $hide_protected_meta ) {
+		echo themify_event_post_get_image();
+		$image = get_the_post_thumbnail_url( $post_id );
+	} else {
+		$image = '';
+	}
 	?>
 
-	<?php if ( $map_address = get_post_meta( $post_id, 'map_address', true ) ) : ?>
+	<?php if ( ! $hide_protected_meta && ( $map_address = get_post_meta( $post_id, 'map_address', true ) ) ) : ?>
 		<div class="tep_event_map">
 			<?php echo themify_event_post_map( array(
 				'address' => $map_address,
@@ -42,7 +49,7 @@ $post_id = get_the_id();
 
 		<?php themify_event_performer(); ?>
 
-		<?php if ( $location = get_post_meta( $post_id, 'location', true ) ) : ?>
+		<?php if ( ! $hide_protected_meta && ( $location = get_post_meta( $post_id, 'location', true ) ) ) : ?>
 				<div>
 					<span class="tep_location">
 						<?php echo esc_html( $location ); ?>
@@ -65,7 +72,8 @@ $post_id = get_the_id();
 
 	</div><!-- /.tep_content -->
 
-    <?php 
+    <?php
+        if ( ! $hide_protected_meta ) :
         $metadata = get_post_meta($post_id);
         echo themify_event_post_json_ld_generator(array(
             'name'=>get_the_title( $this->post ),
@@ -90,5 +98,6 @@ $post_id = get_the_id();
         'organizer_url'=>isset($metadata['organizer_url'])?$metadata['organizer_url'][0]:'',
         'performer'=>isset($metadata['event_performer'])?$metadata['event_performer'][0]:'',
         'performer_name'=>isset($metadata['performer_name'])?$metadata['performer_name'][0]:'',
-    )); ?>
+    ));
+        endif; ?>
 </div><!-- / .themify_event_post -->

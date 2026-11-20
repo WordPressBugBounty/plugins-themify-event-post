@@ -24,10 +24,12 @@
 $post_id = get_the_ID();
 $thumb = '';
 $map_address = '';
+$location = '';
+$hide_protected_meta = themify_event_post_hide_protected_meta( $post_id );
 ?>
 <article id="post-<?php the_id(); ?>" <?php post_class( 'themify_event_post post tf_clearfix event-post' ); ?>>
 
-	<?php if ( $image === 'yes' && has_post_thumbnail() ) : ?>
+	<?php if ( ! $hide_protected_meta && $image === 'yes' && has_post_thumbnail() ) : ?>
 		<?php
 		echo themify_event_post_get_image( array(
 			'width' => $image_w,
@@ -71,7 +73,7 @@ $map_address = '';
                 <?php themify_event_performer(); ?>
             <?php endif; ?>
 
-			<?php if ( ( $location = get_post_meta( $post_id, 'location', true ) ) && $hide_event_location === 'no' ) : ?>
+			<?php if ( ! $hide_protected_meta && ( $location = get_post_meta( $post_id, 'location', true ) ) && $hide_event_location === 'no' ) : ?>
 					<div>
 						<span class="tep_location">
 							<?php echo esc_html( $location ); ?>
@@ -104,7 +106,8 @@ $map_address = '';
 			<?php endif; //display content ?>
 
 		</div><!-- /.tep_content -->
-		<?php 
+		<?php
+			if ( ! $hide_protected_meta ) :
 			$metadata = get_post_meta($post_id);
 			echo themify_event_post_json_ld_generator(array(
 				'name'=>get_the_title( $this->post ),
@@ -128,7 +131,8 @@ $map_address = '';
 				'organizer_url'=>isset($metadata['organizer_url'])?$metadata['organizer_url'][0]:'',
 				'performer'=>isset($metadata['event_performer'])?$metadata['event_performer'][0]:'',
 				'performer_name'=>isset($metadata['performer_name'])?$metadata['performer_name'][0]:'',
-			)); ?>
+			));
+			endif; ?>
 	</div><!-- .tep_post_content -->
 
     <?php themify_event_post_edit_link(); ?>

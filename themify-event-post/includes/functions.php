@@ -100,6 +100,27 @@ function themify_event_is_repeated() {
     return $repeat;
 }
 
+if ( ! function_exists( 'themify_event_post_hide_protected_meta' ) ) :
+/**
+ * Password-protected events keep venue, ticket, and schedule details
+ * private until the visitor unlocks the post, same as the post content.
+ *
+ * Admin screens still show the details so the events list stays usable.
+ *
+ * @param int|WP_Post|null $post Post ID or object. Defaults to the current post.
+ * @return bool
+ */
+function themify_event_post_hide_protected_meta( $post = null ) {
+	if ( is_admin() && ! wp_doing_ajax() ) {
+		return false;
+	}
+
+	$post = get_post( $post );
+
+	return $post instanceof WP_Post && post_password_required( $post );
+}
+endif;
+
 if ( ! function_exists( 'themify_event_post_date' ) ) :
 /**
  * Displays Start Date and End Date properly formatted
@@ -107,6 +128,9 @@ if ( ! function_exists( 'themify_event_post_date' ) ) :
  * @since 1.0.0
  */
 function themify_event_post_date( $date_format = null, $time_format = null ) {
+    if ( themify_event_post_hide_protected_meta() ) {
+        return;
+    }
     if(get_post_meta( get_the_id(), 'to_be_announced', true )==='on'){
         echo '<time class="tep_date"><span class="event-start-date">'.__('To be announced','themify-event-post').'</span></time>';
         return;
@@ -163,6 +187,9 @@ if ( ! function_exists( 'themify_event_type' ) ) :
      * @since 1.1.2
      */
     function themify_event_type() {
+        if ( themify_event_post_hide_protected_meta() ) {
+            return;
+        }
         $post_id = get_the_ID();
         $e_type=get_post_meta( $post_id, 'event_attendance', true );
         if(empty($e_type)){
@@ -179,6 +206,9 @@ if ( ! function_exists( 'themify_event_organizer' ) ) :
      * @since 1.1.2
      */
     function themify_event_organizer() {
+        if ( themify_event_post_hide_protected_meta() ) {
+            return;
+        }
         $post_id = get_the_ID();
         $name=get_post_meta( $post_id, 'organizer_name', true );
         if(empty($name)){
@@ -208,6 +238,9 @@ if ( ! function_exists( 'themify_event_performer' ) ) :
      * @since 1.1.2
      */
     function themify_event_performer() {
+        if ( themify_event_post_hide_protected_meta() ) {
+            return;
+        }
         $post_id = get_the_ID();
         $name=get_post_meta( $post_id, 'performer_name', true );
         if(empty($name)){
@@ -333,7 +366,7 @@ if ( ! function_exists( 'themify_event_post_get_image' ) ) :
  * @since 1.0.8
  */
 function themify_event_post_get_image( $args = array() ) {
-	if ( ! has_post_thumbnail() ) {
+	if ( themify_event_post_hide_protected_meta() || ! has_post_thumbnail() ) {
 		return '';
 	}
 
@@ -712,6 +745,10 @@ if ( ! function_exists( 'themify_event_post_json_ld_generator' ) ) :
 	 * @since 1.0.1
 	 */
 	function themify_event_post_json_ld_generator( $args = array() ) {
+		if ( themify_event_post_hide_protected_meta() ) {
+			return '';
+		}
+
 		$schema = array(
 		        '@context'=>'https://schema.org',
 				'@type'=>'Event',
@@ -1015,6 +1052,9 @@ function themify_events_get_attachment_id_from_url( $url = '', $base_url = '' ) 
  */
 function themify_event_post_get_price( $post = null, $before = '', $after = '' ) {
 	$post = get_post( $post );
+	if ( ! ( $post instanceof WP_Post ) || themify_event_post_hide_protected_meta( $post ) ) {
+		return '';
+	}
 	$price = get_post_meta( $post->ID, 'buy_tickets_price', true );
 	if ( empty( $price ) ) {
 		return '';
@@ -1055,6 +1095,9 @@ endif;
 if ( ! function_exists( 'themify_event_get_buy_ticket' ) ) :
 function themify_event_get_buy_ticket( $post = null ) : string {
     $post = get_post( $post );
+    if ( ! ( $post instanceof WP_Post ) || themify_event_post_hide_protected_meta( $post ) ) {
+        return '';
+    }
     $output = '';
     if ( $buy_ticket = get_post_meta( $post->ID, 'buy_tickets', true ) ) {
         $buy_tickets_label = get_post_meta( $post->ID, 'buy_tickets_label', true );
